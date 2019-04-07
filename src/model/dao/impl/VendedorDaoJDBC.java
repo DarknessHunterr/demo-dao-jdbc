@@ -10,7 +10,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class VendedorDaoJDBC implements VendedorDao {
 
@@ -82,5 +85,43 @@ public class VendedorDaoJDBC implements VendedorDao {
     @Override
     public List<Vendedor> findAll() {
         return null;
+    }
+
+    @Override
+    public List<Vendedor> findByDepartment(Departamento departamento) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try{
+            st = conn.prepareStatement("SELECT s.*, dep.Name AS DepName " +
+                    "FROM seller s INNER JOIN department dep " +
+                    "ON s.DepartmentId = dep.Id " +
+                    "WHERE s.DepartmentId = ? " +
+                    "ORDER BY Name");
+
+            st.setInt(1,departamento.getId());
+            rs = st.executeQuery();
+
+            List<Vendedor> vendedores = new ArrayList<>();
+            Map<Integer, Departamento> map = new HashMap<>();
+
+            while (rs.next()){
+
+                Departamento dep = map.get(rs.getInt("DepartmentId"));
+
+                if (dep == null){
+                    dep = instantiateDepartment(rs);
+                    map.put(rs.getInt("DepartmentId"),dep);
+                }
+
+                Vendedor vendedor = instantiateVendedor(rs,dep);
+                vendedores.add(vendedor);
+            }
+            return vendedores;
+        } catch (SQLException e){
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
     }
 }
