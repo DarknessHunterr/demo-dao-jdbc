@@ -29,5 +29,10 @@ public class Programa {
         for (Vendedor v : vendedores){
             System.out.println(v);
         }
+
+        System.out.println("\n=== TESTE 4: VENDEDOR INSERT===");
+        Vendedor vendedor1 = new Vendedor(null,"Greg","greg@gmail.com",new Date(), 4000.0, departamento);
+        vendedorDao.insert(vendedor1);
+        System.out.println("Inserido com sucesso! Novo Id = " + vendedor1.getId());
     }
 }
